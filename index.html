@@ -78,7 +78,7 @@
     <h2 id="player2-prompt" class="hidden">Player 2, choose your card:</h2>
     <div id="white-cards-player2" class="hidden"></div>
 </div>
-let gameCode = "";
+
 <script>
     // Firebase configuration (Replace with your own Firebase project details)
    const firebaseConfig = {
@@ -94,11 +94,26 @@ let gameCode = "";
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const analytics = getAnalytics(app);
+    let gameCode = ""; // Declare at the top
+let playerNumber = 0; // Keep it accessible across functions
 
-    let gameCode = "";
-    let playerNumber = 0;
+function startNewGame() {
+    gameCode = Math.random().toString(36).substr(2, 6).toUpperCase(); // Generate unique game code
+    playerNumber = 1;
 
+    document.getElementById("game-code").value = gameCode;
+    document.getElementById("game-container").classList.remove("hidden");
+
+    // Initialize game in Firebase
+    db.ref("games/" + gameCode).set({
+        blackCard: blackCards[Math.floor(Math.random() * blackCards.length)],
+        player1Choice: "",
+        player2Choice: "",
+        status: "waiting"
+    });
+
+    listenForUpdates();
+}
     const blackCards = [
         "Why can't I sleep at night?",
         "What's that smell?",
@@ -124,24 +139,6 @@ let gameCode = "";
         "A crazy little thing called love. ❤️",
         "Not giving a damn about the Third World. 🌍"
     ];
-
-    function startNewGame() {
-        gameCode = Math.random().toString(36).substr(2, 6).toUpperCase(); // Generate a unique game code
-        playerNumber = 1;
-
-        document.getElementById("game-code").value = gameCode;
-        document.getElementById("game-container").classList.remove("hidden");
-
-        // Initialize game state in Firebase
-        db.ref("games/" + gameCode).set({
-            blackCard: blackCards[Math.floor(Math.random() * blackCards.length)],
-            player1Choice: "",
-            player2Choice: "",
-            status: "waiting"
-        });
-
-        listenForUpdates();
-    }
 
     function joinGame() {
         gameCode = document.getElementById("game-code").value.toUpperCase();
